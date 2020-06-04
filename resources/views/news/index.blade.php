@@ -80,6 +80,10 @@
       <div class="modal-body text-center">
         <img src="" alt="" class="img-fluid mb-2" id="image">
         <h4 id="author" class="mb-4 text-left"></h4>
+        <div id="userInfo" class="text-left mb-2">
+
+        </div>
+        <hr>
         <p id="content" class="mb-2 text-left"></p>
         <h5 id="date" class="mt-4 text-left"></h5>
       </div>
@@ -100,6 +104,8 @@
 
   var news = {
     apiKey: '6df1d231b32341ae992ca6b2e5b32f75',
+    newsUrl: 'https://newsapi.org/v2/everything',
+    userUrl: 'https://randomuser.me/api/',
     queryString: $('#queryString'),
     newsContent : $(".card-columns#news"),
     pagination: $("#pagination"),
@@ -112,6 +118,7 @@
       author: $("#author"),
       date: $("#date")
     },
+    userInfo: $("#userInfo"),
     news: [],
     randomQueryStrings: [
       'usa', 'covid', 'football', 'videogames', 'mexico', 'movies', 'time', 'technology', 'smartphones', 'apple', 'microsoft'
@@ -134,7 +141,7 @@
       _self.news = [];
       query = _self.queryString.val().trim() == '' ? 'world' : _self.queryString.val().trim();
       _self.newsContent.html('Loading ... ');
-      $.getJSON('https://newsapi.org/v2/everything?q='+query+'&sortBy=publishedAt&pageSize=10&page='+_self.currentPage+'&apiKey='+_self.apiKey)
+      $.getJSON(_self.newsUrl+'?q='+query+'&sortBy=publishedAt&pageSize=10&page='+_self.currentPage+'&apiKey='+_self.apiKey)
         .done(function(data){
           if(data.status == 'ok'){
             _self.news = data.articles;
@@ -196,6 +203,29 @@
         _self.currentNews.author.html("By " + selected.author);
         _self.currentNews.content.html(selected.content);
         _self.currentNews.date.html(selected.publishedAt);
+
+        $.ajax({
+          url: _self.userUrl,
+          dataType: 'json',
+          success: function(data) {
+            _self.userInfo.html('');
+            if(data.results){
+              var user = data.results[0];
+              _self.userInfo.append(`
+                <div class="row">
+                  <div class="col-2">
+                    <img src="${user.picture.medium}" class="img-fluid"><br>
+                  </div>
+                  <div class="col-10">
+                    Author: <b>${user.name.title}. ${user.name.last}</b><br>
+                    Email: <b>${user.email}</b><br>
+                    City: <b>${user.location.city}, ${user.location.state}</b><br>
+                  </div>
+                </div>
+              `);
+            }
+          }
+        });
 
         _self.newsModal.modal('toggle');
       });
